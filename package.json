@@ -1,0 +1,26 @@
+{
+  "name": "honeyfarm-subgraph",
+  "license": "MIT",
+  "version": "1.0.0",
+  "author": "1hive",
+  "scripts": {
+    "codegen:honeyfarm": "graph codegen subgraphs/honeyfarm.yaml",
+    "build": "graph build",
+    "build:honeyfarm": "graph build subgraphs/honeyfarm.yaml",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/",
+    "deploy:honeyfarm": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ pxbee/tulip subgraphs/honeyfarm.yaml",
+    "create-local": "graph create 1hive/honeycomp --node http://localhost:8020/",
+    "remove-local": "graph remove 1hive/honeycomp --node http://localhost:8020/",
+    "deploy-local": "graph deploy 1hive/honeycomp --node http://localhost:8020/ --ipfs http://localhost:5001 ./subgraphs/honeyfarm.yaml"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.19.0",
+    "@graphprotocol/graph-ts": "^0.19.0",
+    "@typescript-eslint/eslint-plugin": "^4.0.0",
+    "@typescript-eslint/parser": "^4.0.0",
+    "eslint": "^7.0.0",
+    "eslint-config-prettier": "^6.0.0",
+    "prettier": "^2.0.0",
+    "typescript": "^4.0.0"
+  }
+}

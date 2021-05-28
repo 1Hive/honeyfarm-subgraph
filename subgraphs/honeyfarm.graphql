@@ -1,0 +1,187 @@
+# HoneyFarm
+type HoneyFarm @entity {
+  # Contract address
+  id: ID!
+
+  # Owner
+  owner: Bytes!
+
+  # StartTime
+  startTime: BigInt!
+
+  # EndTime
+  endTime: BigInt!
+
+  # the negative slope of the distribution line scaled by SCALE, how much
+  # less is being distributed per unit of time.
+  distributionSlope: BigInt!
+
+  #starting distribution rate / unit time scaled by SCALE
+  startDistribution: BigInt!
+
+  # minimum time someone can lock their liquidity for
+  minTimeLock: BigInt!
+
+  # maximum time someone can lock their liquidity for
+  maxTimeLock: BigInt!
+
+  # multiplier for time locked deposits / second locked scaled by SCALE
+  timeLockMultiplier: BigInt!
+
+  # constant added to the timeLockMultiplier scaled by SCALE
+  timeLockConstant: BigInt!
+
+  # One time fee that is deducted from time-locked deposits given to whoever
+  # downgrades it, scaled by SCALE
+  #downgradeFee: BigInt!
+
+  # whether this contract has been disabled
+  #contractDisabledAt: BigInt!
+
+  # What fractional numbers are scaled by
+  scale: BigInt!
+
+  # xComb/HSF
+  hsf: Bytes!
+
+  # Total HSF supply
+  totalHsf: BigInt!
+
+  # Total allocation point
+  totalAllocPoint: BigInt!
+
+  # Pools
+  pools: [Pool!]! @derivedFrom(field: "owner")
+
+  # Pool count
+  poolCount: BigInt!
+
+  # History
+  history: [History!]! @derivedFrom(field: "owner")
+
+  # Upated at
+  updatedAt: BigInt!
+}
+
+type History @entity {
+  # HoneyFarm id concatenated with timestamp
+  id: ID!
+
+  # Owner (HoneyFarm, Pool, or User).
+  owner: HoneyFarm!
+
+  # Timestamp
+  timestamp: BigInt!
+
+  # Block
+  block: BigInt!
+}
+
+# Pool
+type Pool @entity {
+  # Address of pool token
+  id: ID!
+
+  # Owner
+  owner: HoneyFarm!
+
+  # Pool token balance
+  balance: BigInt!
+
+  # Deposit count
+  openDepositCount: BigInt!
+
+  # How many allocation points assigned to this pool.
+  allocPoint: BigInt!
+
+  #  Last block timestamp that HSFs distribution occured
+  lastRewardTimestamp: BigInt!
+
+  # Accumulated HSFs per share, times SCALE.
+  accHsfPerShare: BigDecimal!
+
+  # total shares stored in pool
+  totalShares: BigInt!
+
+  # Pool deposits
+  deposits: [Deposit!]! @derivedFrom(field: "pool")
+
+  # Timestamp
+  timestamp: BigInt!
+
+  # Block
+  block: BigInt!
+
+  # Upated at
+  updatedAt: BigInt!
+
+  # HSF harvested
+  hsfHarvested: BigDecimal!
+
+}
+
+type User @entity {
+  # User address
+  id: ID!
+
+  # Pool users
+  deposits: [Deposit!]! @derivedFrom(field: "user")
+
+ # Amount
+  amount: BigInt!
+
+  # Reward debt
+  rewardDebt: BigInt!
+
+  # HSF harvested
+  hsfHarvested: BigDecimal!
+
+  # Timestamp
+  timestamp: BigInt!
+
+  # Block
+  block: BigInt!
+}
+
+type Deposit @entity {
+  # Deposit id
+  id: ID!
+
+  # User address
+  user: User
+
+  # Related pool
+  pool: Pool
+
+ # Amount
+  amount: BigInt!
+
+  # Reward debt
+  rewardDebt: BigInt!
+
+  # Unlock time
+  unlockTime: BigInt!
+
+  # Reward share
+  rewardShare: BigInt!
+
+  # Set rewards
+  setRewards: BigInt!
+
+  # referrer
+  referrer: Bytes!
+
+  # Timestamp
+  timestamp: BigInt!
+
+  # Block
+  block: BigInt!
+
+  # Status
+  status: DepositStatus!
+}
+
+enum DepositStatus {
+  Open,
+  Closed
+}
