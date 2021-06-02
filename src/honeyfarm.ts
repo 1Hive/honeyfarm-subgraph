@@ -47,6 +47,9 @@ function getHoneyFarm(block: ethereum.Block): HoneyFarm {
         const totalHsf = hsfToken.totalSupply()
 
         honeyFarm.totalHsf = totalHsf
+        
+        honeyFarm.totalHsfHarvested = BIG_INT_ZERO
+
 
         honeyFarm.totalAllocPoint = BIG_INT_ZERO
         // userInfo ...
@@ -154,8 +157,11 @@ export function transferEvent(event: Transfer): void {
         createDeposit(event)
     }
     // _burn
-    else {
+    else if( to.toHex() == ADDRESS_ZERO.toHex() ) {
         closeDeposit(event)
+    }
+    else {
+        moveDeposit(event)
     }
 }
 
@@ -231,6 +237,33 @@ export function closeDeposit(event: Transfer): void {
 
     const deposit = getDeposit(tokenId, event.block)
     deposit.status = "Closed"
+    deposit.save()
+
+    const pool = getPool(Address.fromString(deposit.pool), event.block)
+    const poolToken = ERC20Contract.bind(Address.fromString(pool.id))
+    pool.balance = poolToken.balanceOf(HONEY_FARM_ADDRESS)
+    pool.openDepositCount = pool.openDepositCount.minus(BIG_INT_ONE)
+    pool.save()
+
+}
+
+export function moveDeposit(event: Transfer): void {
+    // log.info('closeDeposit', [])
+
+    const to = event.params.to //zero address
+    const tokenId = event.params.tokenId //tokenId (int)
+
+    // balanceOf is also the latest added index for the user
+    // log.info('---------- createDeposit balanceOf from {}', [to.toHex()])
+    // log.info('---------- createDeposit tokenID {}', [tokenId.toString()])
+
+    const honeyFarmContract = HoneyFarmContract.bind(HONEY_FARM_ADDRESS)
+    const depositInfo = honeyFarmContract.depositInfo(tokenId)
+
+    const deposit = getDeposit(tokenId, event.block)
+
+    const user = getUser(depositInfo.value5, to, event.block)
+    deposit.user = user.id
     deposit.save()
 
     const pool = getPool(Address.fromString(deposit.pool), event.block)

@@ -47,6 +47,9 @@ type HoneyFarm @entity {
   # Total HSF supply
   totalHsf: BigInt!
 
+  # Total HSF Harvested
+  totalHsfHarvested: BigInt!
+
   # Total allocation point
   totalAllocPoint: BigInt!
 
@@ -61,6 +64,7 @@ type HoneyFarm @entity {
 
   # Upated at
   updatedAt: BigInt!
+
 }
 
 type History @entity {
