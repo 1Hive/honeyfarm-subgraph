@@ -2,20 +2,24 @@ import {
     HoneyFarm as HoneyFarmContract,
     PoolAdded,
     Transfer,
-    RewardsWithdraw
+    RewardsWithdraw,
 } from '../generated/HoneyFarm/HoneyFarm'
-import {Address, BigInt, ethereum} from '@graphprotocol/graph-ts'
+import {Address, BigInt, ethereum, log} from '@graphprotocol/graph-ts'
 import {
-    ADDRESS_ZERO,
-    BIG_DECIMAL_ZERO,
+    ADDRESS_ZERO, AIRDROPPER_ADDRESS,
     BIG_INT_ONE,
     BIG_INT_ONE_DAY_SECONDS,
     BIG_INT_ZERO,
-    HONEY_FARM_ADDRESS
+    HONEY_FARM_ADDRESS, HSF_TOKEN_ADDRESS
 } from './constants'
-import {HoneyFarm, Pool, History, User, Deposit} from '../generated/schema'
+import {HoneyFarm, Pool, History, User, Deposit, HsfToken} from '../generated/schema'
 
-import {ERC20 as ERC20Contract} from '../generated/HoneyFarm/ERC20'
+import {
+    ERC20 as ERC20Contract,
+    Transfer as ERC20Transfer
+} from '../generated/HoneyFarm/ERC20'
+
+import { HsfTokenTemplate } from '../generated/templates'
 
 
 function getHoneyFarm(block: ethereum.Block): HoneyFarm {
@@ -43,12 +47,16 @@ function getHoneyFarm(block: ethereum.Block): HoneyFarm {
 
         const hsfAddress = contract.hsf()
         honeyFarm.hsf = hsfAddress
-        const hsfToken = ERC20Contract.bind(hsfAddress)
-        const totalHsf = hsfToken.totalSupply()
+        const hsfTokenContract = ERC20Contract.bind(hsfAddress)
+        const totalHsf = hsfTokenContract.totalSupply()
+
+        HsfTokenTemplate.create(hsfAddress)
+
+        const hsfToken = getHsfToken(block)
+        hsfToken.totalSupply = totalHsf
+        hsfToken.save()
 
         honeyFarm.totalHsf = totalHsf
-        
-        honeyFarm.totalHsfHarvested = BIG_INT_ZERO
 
 
         honeyFarm.totalAllocPoint = BIG_INT_ZERO
@@ -62,6 +70,21 @@ function getHoneyFarm(block: ethereum.Block): HoneyFarm {
 
     return honeyFarm as HoneyFarm
 }
+
+function getHsfToken(block: ethereum.Block): HsfToken {
+    let hsfToken = HsfToken.load(HSF_TOKEN_ADDRESS.toHex())
+
+    if (hsfToken === null) {
+        hsfToken = new HsfToken(HSF_TOKEN_ADDRESS.toHex())
+        hsfToken.totalSupply = BIG_INT_ZERO
+        hsfToken.totalHsfHarvested = BIG_INT_ZERO
+        hsfToken.totalHsfClaimed = BIG_INT_ZERO
+        hsfToken.save()
+    }
+
+    return hsfToken as HsfToken
+}
+
 
 export function getPool(id: Address, block: ethereum.Block): Pool {
     let pool = Pool.load(id.toHexString())
@@ -81,8 +104,10 @@ export function getPool(id: Address, block: ethereum.Block): Pool {
 
         pool.allocPoint = poolInfo.value0
         pool.lastRewardTimestamp = poolInfo.value1
-        pool.accHsfPerShare = poolInfo.value2.toBigDecimal()
+        pool.accHsfPerShare = poolInfo.value2
         pool.totalShares = poolInfo.value3
+
+        pool.hsfHarvested = BIG_INT_ZERO
 
         // Total supply of LP tokens
         pool.balance = BIG_INT_ZERO
@@ -92,7 +117,6 @@ export function getPool(id: Address, block: ethereum.Block): Pool {
         pool.block = block.number
 
         pool.updatedAt = block.timestamp
-        pool.hsfHarvested = BIG_DECIMAL_ZERO
         pool.save()
     }
 
@@ -136,7 +160,6 @@ export function getUser(pid: Address, address: Address, block: ethereum.Block): 
         user = new User(id)
         user.amount = BIG_INT_ZERO
         user.rewardDebt = BIG_INT_ZERO
-        user.hsfHarvested = BIG_DECIMAL_ZERO
         user.timestamp = block.timestamp
         user.block = block.number
         user.save()
@@ -157,10 +180,9 @@ export function transferEvent(event: Transfer): void {
         createDeposit(event)
     }
     // _burn
-    else if( to.toHex() == ADDRESS_ZERO.toHex() ) {
+    else if (to.toHex() == ADDRESS_ZERO.toHex()) {
         closeDeposit(event)
-    }
-    else {
+    } else {
         moveDeposit(event)
     }
 }
@@ -210,7 +232,7 @@ export function createDeposit(event: Transfer): void {
     // log.info('---------- createDeposit tokenID {}', [tokenId.toString()])
 
 
-   const depositInfo = honeyFarmContract.depositInfo(tokenId)
+    const depositInfo = honeyFarmContract.depositInfo(tokenId)
 
     const deposit = getDeposit(tokenId, event.block)
     const user = getUser(depositInfo.value5, to, event.block)
@@ -288,4 +310,20 @@ export function withdrawRewardsEvent(event: RewardsWithdraw): void {
     deposit.rewardDebt = depositInfo.value1
     deposit.setRewards = depositInfo.value4
     deposit.save()
+}
+
+export function transferRewardsEvent(event: ERC20Transfer): void {
+    // comb harvested from the farms
+    if (event.params.from.toHex() == HONEY_FARM_ADDRESS.toHex()) {
+        const hsfToken = getHsfToken(event.block)
+        hsfToken.totalHsfHarvested = hsfToken.totalHsfHarvested.plus(event.params.value)
+        hsfToken.save()
+    }
+
+    // comb claimed from the airdrop
+    if (event.params.from.toHex() == AIRDROPPER_ADDRESS.toHex()) {
+        const hsfToken = getHsfToken(event.block)
+        hsfToken.totalHsfClaimed = hsfToken.totalHsfClaimed.plus(event.params.value)
+        hsfToken.save()
+    }
 }

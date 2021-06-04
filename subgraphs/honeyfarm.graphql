@@ -47,9 +47,6 @@ type HoneyFarm @entity {
   # Total HSF supply
   totalHsf: BigInt!
 
-  # Total HSF Harvested
-  totalHsfHarvested: BigInt!
-
   # Total allocation point
   totalAllocPoint: BigInt!
 
@@ -102,7 +99,9 @@ type Pool @entity {
   lastRewardTimestamp: BigInt!
 
   # Accumulated HSFs per share, times SCALE.
-  accHsfPerShare: BigDecimal!
+  accHsfPerShare: BigInt!
+
+  hsfHarvested: BigInt!
 
   # total shares stored in pool
   totalShares: BigInt!
@@ -119,9 +118,6 @@ type Pool @entity {
   # Upated at
   updatedAt: BigInt!
 
-  # HSF harvested
-  hsfHarvested: BigDecimal!
-
 }
 
 type User @entity {
@@ -136,9 +132,6 @@ type User @entity {
 
   # Reward debt
   rewardDebt: BigInt!
-
-  # HSF harvested
-  hsfHarvested: BigDecimal!
 
   # Timestamp
   timestamp: BigInt!
@@ -185,7 +178,19 @@ type Deposit @entity {
   status: DepositStatus!
 }
 
+type HsfToken @entity {
+  # Deposit id
+  id: ID!
+
+  totalSupply: BigInt!
+
+  totalHsfHarvested: BigInt!
+
+  totalHsfClaimed: BigInt!
+}
+
 enum DepositStatus {
   Open,
   Closed
 }
+
