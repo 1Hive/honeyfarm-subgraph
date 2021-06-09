@@ -11,7 +11,6 @@
     "build": "graph build",
     "deploy:xdai": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ 1hive/honeyfarm-xdai subgraph.yaml",
     "deploy:polygon": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ 1hive/honeyfarm-polygon subgraph.yaml"
-
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.19.0",
