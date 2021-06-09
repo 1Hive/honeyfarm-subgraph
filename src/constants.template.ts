@@ -18,8 +18,10 @@ export const BIG_INT_ONE_DAY_SECONDS = BigInt.fromI32(86400)
 
 export const BIG_INT_ZERO = BigInt.fromI32(0)
 
-export const HONEY_FARM_ADDRESS = Address.fromString('0xB44825cF0d8D4dD552f2434056c41582415AaAa1')
+export const BURN_ADDRESS = Address.fromString('0x000000000000000000000000000000000000dEaD')
 
-export const HSF_TOKEN_ADDRESS = Address.fromString('0x38Fb649Ad3d6BA1113Be5F57B927053E97fC5bF7')
+export const HONEY_FARM_ADDRESS = Address.fromString('{{ HONEY_FARM_ADDRESS }}')
 
-export const AIRDROPPER_ADDRESS = Address.fromString('0xdD36008685108aFafc11F88bBc66C39A851Df843')
+export const HSF_TOKEN_ADDRESS = Address.fromString('{{ HSF_TOKEN_ADDRESS }}')
+
+export const AIRDROPPER_ADDRESS = Address.fromString('{{ AIRDROPPER_ADDRESS }}')
