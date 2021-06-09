@@ -4,14 +4,14 @@
   "version": "1.0.0",
   "author": "1hive",
   "scripts": {
-    "codegen:honeyfarm": "graph codegen subgraphs/honeyfarm.yaml",
+    "prepare": "./scripts/prepare.sh",
+    "prepare:xdai": "NETWORK=xdai yarn prepare",
+    "prepare:polygon": "NETWORK=polygon yarn prepare",
+    "codegen": "graph codegen",
     "build": "graph build",
-    "build:honeyfarm": "graph build subgraphs/honeyfarm.yaml",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/",
-    "deploy:honeyfarm": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ pxbee/tulip-xdai subgraphs/honeyfarm.yaml",
-    "create-local": "graph create 1hive/honeycomp --node http://localhost:8020/",
-    "remove-local": "graph remove 1hive/honeycomp --node http://localhost:8020/",
-    "deploy-local": "graph deploy 1hive/honeycomp --node http://localhost:8020/ --ipfs http://localhost:5001 ./subgraphs/honeyfarm.yaml"
+    "deploy:xdai": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ 1hive/honeyfarm-xdai subgraph.yaml",
+    "deploy:polygon": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ 1hive/honeyfarm-polygon subgraph.yaml"
+
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.19.0",

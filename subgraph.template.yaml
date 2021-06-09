@@ -2,15 +2,15 @@ specVersion: 0.0.2
 description: HoneyFarm
 repository: https://github.com/pxbee/tulip-subgraph
 schema:
-  file: ./honeyfarm.graphql
+  file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: HoneyFarm
-    network: xdai
+    network: {{ NETWORK }}
     source:
-      address: '0xB44825cF0d8D4dD552f2434056c41582415AaAa1'
+      address: '{{ HONEY_FARM_ADDRESS }}'
       abi: HoneyFarm
-      startBlock: 16285152
+      startBlock: {{ START_BLOCK }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -22,9 +22,9 @@ dataSources:
         - Deposit
       abis:
         - name: HoneyFarm
-          file: ../abis/HoneyFarm.json
+          file: ./abis/HoneyFarm.json
         - name: ERC20
-          file: ../abis/ERC20.json
+          file: ./abis/ERC20.json
       eventHandlers:
         - event: PoolAdded(indexed address,uint256)
           handler: poolAddedEvent
@@ -36,7 +36,7 @@ dataSources:
           handler: transferEvent
         - event: RewardsWithdraw(indexed uint256,uint256)
           handler: withdrawRewardsEvent
-      file: ../src/honeyfarm.ts
+      file: src/honeyfarm.ts
 templates:
   - kind: ethereum/contract
     name: HsfTokenTemplate
@@ -51,8 +51,8 @@ templates:
         - HsfToken
       abis:
         - name: ERC20
-          file: ../abis/ERC20.json
+          file: ./abis/ERC20.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: transferRewardsEvent
-      file: ../src/honeyfarm.ts
+      file: ./src/honeyfarm.ts

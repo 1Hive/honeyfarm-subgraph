@@ -101,8 +101,6 @@ type Pool @entity {
   # Accumulated HSFs per share, times SCALE.
   accHsfPerShare: BigInt!
 
-  hsfHarvested: BigInt!
-
   # total shares stored in pool
   totalShares: BigInt!
 

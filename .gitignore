@@ -67,3 +67,5 @@ build/
 generated/
 /build/
 /generated/
+/src/constants.ts
+/subgraph.yaml

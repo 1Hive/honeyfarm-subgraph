@@ -13,6 +13,7 @@ import {
     BIG_INT_ONE,
     BIG_INT_ONE_DAY_SECONDS,
     BIG_INT_ZERO,
+    BURN_ADDRESS,
     HONEY_FARM_ADDRESS,
     HSF_TOKEN_ADDRESS
 } from './constants'
@@ -111,8 +112,6 @@ export function getPool(id: Address, block: ethereum.Block): Pool {
         pool.lastRewardTimestamp = poolInfo.value1
         pool.accHsfPerShare = poolInfo.value2
         pool.totalShares = poolInfo.value3
-
-        pool.hsfHarvested = BIG_INT_ZERO
 
         // Total supply of LP tokens
         pool.balance = BIG_INT_ZERO
@@ -408,9 +407,8 @@ export function transferRewardsEvent(event: ERC20Transfer): void {
     }
 
     // comb burned
-    if (event.params.to.toHex() == Address.fromString("0x000000000000000000000000000000000000dEaD").toHex()
-    || event.params.to.toHex() == Address.fromString("0x0000000000000000000000000000000000000000").toHex()) {
-        log.debug('comb burn', [])
+    if (event.params.to.toHex() == BURN_ADDRESS.toHex()
+    || event.params.to.toHex() == ADDRESS_ZERO.toHex()) {
         const hsfToken = getHsfToken(event.block)
         hsfToken.totalHsfBurned = hsfToken.totalHsfBurned.plus(event.params.value)
         hsfToken.save()
