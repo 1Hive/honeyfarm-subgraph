@@ -1,16 +1,20 @@
 import {
     HoneyFarm as HoneyFarmContract,
     PoolAdded,
+    PoolUpdated,
+    PoolRemoved,
     Transfer,
     RewardsWithdraw,
 } from '../generated/HoneyFarm/HoneyFarm'
 import {Address, BigInt, ethereum, log} from '@graphprotocol/graph-ts'
 import {
-    ADDRESS_ZERO, AIRDROPPER_ADDRESS,
+    ADDRESS_ZERO,
+    AIRDROPPER_ADDRESS,
     BIG_INT_ONE,
     BIG_INT_ONE_DAY_SECONDS,
     BIG_INT_ZERO,
-    HONEY_FARM_ADDRESS, HSF_TOKEN_ADDRESS
+    HONEY_FARM_ADDRESS,
+    HSF_TOKEN_ADDRESS
 } from './constants'
 import {HoneyFarm, Pool, History, User, Deposit, HsfToken} from '../generated/schema'
 
@@ -79,6 +83,7 @@ function getHsfToken(block: ethereum.Block): HsfToken {
         hsfToken.totalSupply = BIG_INT_ZERO
         hsfToken.totalHsfHarvested = BIG_INT_ZERO
         hsfToken.totalHsfClaimed = BIG_INT_ZERO
+        hsfToken.totalHsfBurned = BIG_INT_ZERO
         hsfToken.save()
     }
 
@@ -140,14 +145,58 @@ function getHistory(owner: string, block: ethereum.Block): History {
     return history as History
 }
 
-export function poolEvent(event: PoolAdded): void {
+export function poolAddedEvent(event: PoolAdded): void {
 
+    const honeyFarmContract = HoneyFarmContract.bind(HONEY_FARM_ADDRESS)
     const honeyFarm = getHoneyFarm(event.block)
 
-    const pool = getPool(event.params.poolToken, event.block)
-    honeyFarm.totalAllocPoint = honeyFarm.totalAllocPoint.plus(pool.allocPoint)
+    honeyFarm.totalAllocPoint = honeyFarmContract.totalAllocationPoints()
     honeyFarm.poolCount = honeyFarm.poolCount.plus(BIG_INT_ONE)
     honeyFarm.save()
+
+
+    const pool = getPool(event.params.poolToken, event.block)
+}
+
+export function poolUpdatedEvent(event: PoolUpdated): void {
+
+    const honeyFarmContract = HoneyFarmContract.bind(HONEY_FARM_ADDRESS)
+    const honeyFarm = getHoneyFarm(event.block)
+
+    honeyFarm.totalAllocPoint = honeyFarmContract.totalAllocationPoints()
+    honeyFarm.save()
+
+
+    const pool = getPool(event.params.poolToken, event.block)
+    const poolInfo = honeyFarmContract.poolInfo(Address.fromString(pool.id))
+
+    pool.allocPoint = poolInfo.value0
+    pool.lastRewardTimestamp = poolInfo.value1
+    pool.accHsfPerShare = poolInfo.value2
+    pool.totalShares = poolInfo.value3
+
+    pool.updatedAt = event.block.timestamp
+    pool.save()
+}
+
+export function poolRemovedEvent(event: PoolRemoved): void {
+    const honeyFarmContract = HoneyFarmContract.bind(HONEY_FARM_ADDRESS)
+    const honeyFarm = getHoneyFarm(event.block)
+
+    honeyFarm.totalAllocPoint = honeyFarmContract.totalAllocationPoints()
+    honeyFarm.save()
+
+
+    const pool = getPool(event.params.poolToken, event.block)
+    const poolInfo = honeyFarmContract.poolInfo(Address.fromString(pool.id))
+
+    pool.allocPoint = poolInfo.value0
+    pool.lastRewardTimestamp = poolInfo.value1
+    pool.accHsfPerShare = poolInfo.value2
+    pool.totalShares = poolInfo.value3
+
+    pool.updatedAt = event.block.timestamp
+    pool.save()
 }
 
 //pid is the address of the pool token, address is wallet address
@@ -243,6 +292,16 @@ export function createDeposit(event: Transfer): void {
     const poolToken = ERC20Contract.bind(Address.fromString(pool.id))
     pool.balance = poolToken.balanceOf(HONEY_FARM_ADDRESS)
     pool.openDepositCount = pool.openDepositCount.plus(BIG_INT_ONE)
+
+    const poolInfo = honeyFarmContract.poolInfo(Address.fromString(deposit.pool))
+
+    pool.allocPoint = poolInfo.value0
+    pool.lastRewardTimestamp = poolInfo.value1
+    pool.accHsfPerShare = poolInfo.value2
+    pool.totalShares = poolInfo.value3
+
+    pool.updatedAt = event.block.timestamp
+
     pool.save()
 
 }
@@ -265,6 +324,17 @@ export function closeDeposit(event: Transfer): void {
     const poolToken = ERC20Contract.bind(Address.fromString(pool.id))
     pool.balance = poolToken.balanceOf(HONEY_FARM_ADDRESS)
     pool.openDepositCount = pool.openDepositCount.minus(BIG_INT_ONE)
+
+    const honeyFarmContract = HoneyFarmContract.bind(HONEY_FARM_ADDRESS)
+    const poolInfo = honeyFarmContract.poolInfo(Address.fromString(deposit.pool))
+
+    pool.allocPoint = poolInfo.value0
+    pool.lastRewardTimestamp = poolInfo.value1
+    pool.accHsfPerShare = poolInfo.value2
+    pool.totalShares = poolInfo.value3
+
+    pool.updatedAt = event.block.timestamp
+
     pool.save()
 
 }
@@ -292,6 +362,16 @@ export function moveDeposit(event: Transfer): void {
     const poolToken = ERC20Contract.bind(Address.fromString(pool.id))
     pool.balance = poolToken.balanceOf(HONEY_FARM_ADDRESS)
     pool.openDepositCount = pool.openDepositCount.minus(BIG_INT_ONE)
+
+    const poolInfo = honeyFarmContract.poolInfo(Address.fromString(deposit.pool))
+
+    pool.allocPoint = poolInfo.value0
+    pool.lastRewardTimestamp = poolInfo.value1
+    pool.accHsfPerShare = poolInfo.value2
+    pool.totalShares = poolInfo.value3
+
+    pool.updatedAt = event.block.timestamp
+
     pool.save()
 
 }
@@ -324,6 +404,15 @@ export function transferRewardsEvent(event: ERC20Transfer): void {
     if (event.params.from.toHex() == AIRDROPPER_ADDRESS.toHex()) {
         const hsfToken = getHsfToken(event.block)
         hsfToken.totalHsfClaimed = hsfToken.totalHsfClaimed.plus(event.params.value)
+        hsfToken.save()
+    }
+
+    // comb burned
+    if (event.params.to.toHex() == Address.fromString("0x000000000000000000000000000000000000dEaD").toHex()
+    || event.params.to.toHex() == Address.fromString("0x0000000000000000000000000000000000000000").toHex()) {
+        log.debug('comb burn', [])
+        const hsfToken = getHsfToken(event.block)
+        hsfToken.totalHsfBurned = hsfToken.totalHsfBurned.plus(event.params.value)
         hsfToken.save()
     }
 }

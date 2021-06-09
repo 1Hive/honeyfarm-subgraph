@@ -8,7 +8,7 @@
     "build": "graph build",
     "build:honeyfarm": "graph build subgraphs/honeyfarm.yaml",
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/",
-    "deploy:honeyfarm": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ 1hive/honeyfarm-xdai subgraphs/honeyfarm.yaml",
+    "deploy:honeyfarm": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ pxbee/tulip-xdai subgraphs/honeyfarm.yaml",
     "create-local": "graph create 1hive/honeycomp --node http://localhost:8020/",
     "remove-local": "graph remove 1hive/honeycomp --node http://localhost:8020/",
     "deploy-local": "graph deploy 1hive/honeycomp --node http://localhost:8020/ --ipfs http://localhost:5001 ./subgraphs/honeyfarm.yaml"
@@ -20,6 +20,7 @@
     "@typescript-eslint/parser": "^4.0.0",
     "eslint": "^7.0.0",
     "eslint-config-prettier": "^6.0.0",
+    "mustache": "^4.2.0",
     "prettier": "^2.0.0",
     "typescript": "^4.0.0"
   }

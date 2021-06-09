@@ -27,7 +27,11 @@ dataSources:
           file: ../abis/ERC20.json
       eventHandlers:
         - event: PoolAdded(indexed address,uint256)
-          handler: poolEvent
+          handler: poolAddedEvent
+        - event: PoolUpdated(indexed address,uint256)
+          handler: poolUpdatedEvent
+        - event: PoolRemoved(indexed address)
+          handler: poolRemovedEvent
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: transferEvent
         - event: RewardsWithdraw(indexed uint256,uint256)
