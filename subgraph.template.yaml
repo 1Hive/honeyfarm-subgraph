@@ -40,7 +40,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: HsfTokenTemplate
-    network: xdai
+    network: {{ NETWORK }}
     source:
       abi: ERC20
     mapping:
