@@ -408,7 +408,7 @@ export function transferRewardsEvent(event: ERC20Transfer): void {
     }
 
     // comb claimed from the airdrop claimer contract
-    if (CLAIMER_ADDRESS !== null && event.params.from.toHex() == CLAIMER_ADDRESS.toHex()) {
+    if (CLAIMER_ADDRESS !== null && event.params.from.toHex() == CLAIMER_ADDRESS.toHex() && event.params.to.toHex() != AIRDROPPER_ADDRESS.toHex()) {
         const hsfToken = getHsfToken(event.block)
         hsfToken.totalHsfClaimed = hsfToken.totalHsfClaimed.plus(event.params.value)
         hsfToken.save()
