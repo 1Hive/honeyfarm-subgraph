@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 description: HoneyFarm
-repository: https://github.com/pxbee/tulip-subgraph
+repository: https://github.com/1hive/honeyfarm-subgraph
 schema:
   file: ./schema.graphql
 dataSources:
