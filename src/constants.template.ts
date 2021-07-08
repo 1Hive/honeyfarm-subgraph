@@ -25,3 +25,5 @@ export const HONEY_FARM_ADDRESS = Address.fromString('{{ HONEY_FARM_ADDRESS }}')
 export const HSF_TOKEN_ADDRESS = Address.fromString('{{ HSF_TOKEN_ADDRESS }}')
 
 export const AIRDROPPER_ADDRESS = Address.fromString('{{ AIRDROPPER_ADDRESS }}')
+
+export const CLAIMER_ADDRESS = Address.fromString('{{ CLAIMER_ADDRESS }}')
